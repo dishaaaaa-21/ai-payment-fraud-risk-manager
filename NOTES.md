@@ -37,11 +37,17 @@ Following the user's instruction to validate data and assumptions before buildin
 - Fraud: 8,213 cases (0.1291%). Extremely imbalanced.
 - `isFlaggedFraud`: only 16 cases flagged (0.19% recall on actual fraud — essentially useless).
 
-### CRITICAL BUG FOUND: is_full_balance_transfer has 100% fraud rate
-- In the 10K sample: `is_full_balance_transfer=True` has fraud rate 1.0, False has fraud rate 0.0.
-- This is suspiciously clean — it suggests PaySim's fraud mechanism IS "drain entire balance."
-- If we include this feature, the model trivially learns a perfect rule. That's not learning fraud patterns, that's memorizing the simulation's fraud-injection rule.
-- **Decision needed**: include but acknowledge this is a dataset artifact? Or exclude to force the model to learn from other signals? Need to check on the full dataset, not just a sample.
+### CRITICAL BUG FOUND: is_full_balance_transfer is a perfect fraud detector (dataset artifact)
+- VERIFIED ON FULL DATASET (not just sample):
+  - 8,018 full-balance-transfers exist. ALL 8,018 are fraud. Zero non-fraud.
+  - 97.6% of ALL fraud (8,018/8,213) is a full-balance-transfer.
+  - Only 195 fraud cases are NOT full-balance-transfers.
+- This means PaySim's fraud injection mechanism IS "drain entire balance."
+- Including this feature = model memorizes the simulation rule, not fraud patterns.
+- **Decision**: INCLUDE in one model variant for comparison (to show the dataset's inherent structure),
+  but PRIMARY model should EXCLUDE it to force learning from other signals.
+  Otherwise we're just building a `if amount == balance: fraud` detector.
+- This is honestly reported as a PaySim limitation.
 
 ### CRITICAL FINDING: Behavioral features are DEAD ON ARRIVAL for PaySim
 - 99.9% of customers (6,344,009 of 6,353,307) have exactly ONE transaction.
