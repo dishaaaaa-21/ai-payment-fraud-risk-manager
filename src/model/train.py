@@ -285,13 +285,10 @@ def train_xgboost(X_train, y_train, X_val, y_val, variant_name):
     # Feature importance
     print(f"\n  --- Feature Importance (gain) ---")
     importance = model.get_booster().get_score(importance_type="gain")
-    # Map f0, f1, ... to feature names
-    feature_names = list(X_train.columns)
+    # XGBoost trained on DataFrames uses column names directly
     named_importance = {}
     for fname, score in importance.items():
-        idx = int(fname.replace("f", ""))
-        if idx < len(feature_names):
-            named_importance[feature_names[idx]] = score
+        named_importance[fname] = score
     for feat, score in sorted(named_importance.items(), key=lambda x: -x[1]):
         print(f"    {feat:30s} {score:>12.1f}")
 
