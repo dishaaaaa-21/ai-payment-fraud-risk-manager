@@ -105,3 +105,35 @@ The behavioral engine cannot be validated on PaySim. This doesn't mean we should
 - Risk fusion evaluation: Only the ML component contributes signal on PaySim data.
 
 This is an honest limitation, not a failure. Document it clearly.
+
+---
+
+## 2026-09-04 00:57 — Phase 1B Model Training Complete
+
+### Results (Validation Set Only — Test UNTOUCHED)
+
+| Model | PR-AUC | Precision | Recall | F1 | ROC-AUC |
+|---|---|---|---|---|---|
+| Naive Baseline (rules-only) | N/A | 0.0352 | 0.6972 | 0.0670 | N/A |
+| LogReg (Production) | 0.5629 | 0.5740 | 0.4219 | 0.4863 | 0.9866 |
+| LogReg (Benchmark) | 0.9994 | 1.0000 | 0.9994 | 0.9997 | 0.9995 |
+| **XGBoost (Production)** | **0.9915** | **0.9611** | **0.9334** | **0.9471** | **0.9999** |
+| XGBoost (Benchmark) | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 |
+
+### Key observations:
+- Naive baseline: high recall (70%) but terrible precision (3.5%). Rules-only catches fraud but generates ~30K false positives.
+- LogReg Production: decent PR-AUC (0.56) but calibration is off (mean P(fraud)=0.088 vs actual 0.0086). Needs very high threshold (0.996) to get reasonable precision.
+- **XGBoost Production: excellent. PR-AUC 0.9915, 96% precision at 93% recall.** Selected as primary.
+- Benchmark models: near-perfect (as expected — `is_full_balance_transfer` is a perfect cheat code). XGBoost Benchmark converged in iteration 0 (!) — literally only needs one split.
+- `amount_to_balance_ratio` dominates XGBoost Production feature importance (132K gain vs 4.8K for next feature). This confirms that fraud in PaySim is fundamentally about spending all your balance.
+- Platt calibration works perfectly: post-calibration mean P(fraud)=0.008617 matches actual rate exactly.
+- Benchmark model importance: `is_full_balance_transfer` has 3.6M gain vs 42K for `amount` — confirms the cheat-code nature.
+
+### Approved decision: XGBoost Production (calibrated) as primary model.
+Benchmark models retained as documented dataset-artifact reference only.
+
+---
+
+## 2026-09-05 12:19 — Starting Phases 3-8
+
+Building behavioral engine, policy engine, risk decision fusion, synthetic scenario, AI investigation, and audit trail. All behavioral/policy evaluation will use the synthetic scenario, not PaySim metrics.
