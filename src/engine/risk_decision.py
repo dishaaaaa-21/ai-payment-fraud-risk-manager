@@ -98,7 +98,7 @@ class RiskDecisionEngine:
         w_ml: float = 0.50,
         w_behavioral: float = 0.25,
         w_policy: float = 0.25,
-        low_threshold: float = 0.25,
+        low_threshold: float = 0.15,
         med_threshold: float = 0.50,
         high_threshold: float = 0.75,
     ):
