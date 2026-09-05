@@ -185,12 +185,16 @@ class RiskDecisionEngine:
             + self.w_policy * policy_score
         )
 
-        # Policy override: if CRITICAL-level rules fire, ensure at least HIGH
-        # This is a deterministic safeguard — policy can ELEVATE but not lower
-        if policy_result.rules_triggered >= 3:
+        # Policy override: deterministic safeguard — policy can ELEVATE but not lower
+        # 4+ rules fired → at least CRITICAL tier
+        # 3 rules fired → at least HIGH tier
+        # 2 rules fired → at least MEDIUM tier
+        if policy_result.rules_triggered >= 4:
             composite = max(composite, self.high_threshold)
-        elif policy_result.rules_triggered >= 2:
+        elif policy_result.rules_triggered >= 3:
             composite = max(composite, self.med_threshold)
+        elif policy_result.rules_triggered >= 2:
+            composite = max(composite, self.low_threshold)
 
         # Determine tier
         if composite >= self.high_threshold:

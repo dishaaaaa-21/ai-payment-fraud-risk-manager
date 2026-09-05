@@ -72,9 +72,9 @@ class PolicyEngine:
 
     def __init__(
         self,
-        velocity_threshold: int = 5,
-        velocity_window_steps: int = 3,
-        high_value_amount: float = 50_000,
+        velocity_threshold: int = 4,
+        velocity_window_steps: int = 24,
+        high_value_amount: float = 15_000,
         repeated_high_value_min_count: int = 2,
         new_counterparty_high_value: float = 100_000,
         escalation_ratio_threshold: float = 3.0,
